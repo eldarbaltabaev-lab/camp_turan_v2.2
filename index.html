@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Главная</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function() {
+      // Читаем тему из памяти
+      var theme = localStorage.getItem('site-theme') || 'dark';
+      // Применяем её к самому первому тегу <html>
+      document.documentElement.setAttribute('data-theme', theme);
+      // Отключаем анимацию переходов при загрузке, чтобы не было плавного "перекрашивания"
+      document.documentElement.classList.add('no-transition');
+      // Включаем анимацию обратно, когда страница загрузится
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          document.documentElement.classList.remove('no-transition');
+        }, 100);
+      });
+    })();
+  </script>
+
+ 
+</head>
+<body>
+  <header>
+    <div class="btw">
+      <nav class="nvg">
+        <a href="index.html">Главная</a>
+        <a href="page2.html">Настройки</a>
+        <button id="helpBtn" class="whats-new-btn" title="Справка">❓ Справка</button>
+        <button id="whatsNewBtn" class="whats-new-btn" title="Что нового">✨ Что нового</button>
+          <button id="themeToggle" class="theme-toggle" title="Переключить тему">☀️</button>
+
+        </span>
+      </nav>
+    </div>
+  </header>
+  <div class="print-buttons">
+    <button id="exportBtn" class="print-btn print-btn-export">📥 Экспорт в Excel</button>
+    <button id="printDay" class="print-btn print-btn-day">☀️ Печать День</button>
+    <button id="printNight" class="print-btn print-btn-night">🌙 Печать Ночь</button>
+  </div>
+  <main class="container">
+    <h1>Подсчёт сотрудников по локациям</h1>
+    <p class="muted">
+      Перетащите .xlsx файлы (можно сразу много) или выберите вручную.
+      День и Ночь считаются отдельно, метки «Ланчбокс» и «Диета» уходят в LBX.
+    </p>
+
+    <div id="dropzone" class="dropzone">
+      <input type="file" id="file-input" accept=".xlsx,.xls" multiple hidden />
+    
+      <!-- Слой воды с волнами -->
+      <div class="water" aria-hidden="true">
+        <div class="wave wave-a"></div>
+        <div class="wave wave-b"></div>
+      </div>
+    
+      <div class="dropzone-inner">
+        <strong>Перетащите файлы сюда</strong>
+        <!---<span class="muted gr">или нажмите, чтобы выбрать</span>--->
+      </div>
+    </div>
+    <p id="status" class="muted"></p>
+
+    <section id="summary" class="summary hidden"></section>
+    <section id="filterPanel" class="filter-panel hidden"></section>
+    <section id="results"></section>
+
+  </main>
+  <script src="settings.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="print.js"></script>
+    <script type="module" src="export.js"></script>
+    <script>
+      document.getElementById('printDay').addEventListener('click', () => {
+        printSheets(window.importedFiles || [], 'day');
+      });
+      document.getElementById('printNight').addEventListener('click', () => {
+        printSheets(window.importedFiles || [], 'night');
+      });
+    </script>
+  <script type="module" src="script.js"></script>
+  <div id="whatsNewPanel" class="whats-new-panel hidden">
+    <div class="whats-new-header">
+      <span class="whats-new-title">✨ Что нового</span>
+      <button id="whatsNewClose" class="whats-new-close" aria-label="Закрыть">×</button>
+    </div>
+   
+  
+    <div class="whats-new-body">
+      <div class="wn-version">
+        <span class="wn-version-tag">v2.2</span>
+        <span class="wn-version-date">29 октября 2026</span>
+      </div>
+  
+      <ul class="wn-list">
+        <li><b>Печать День / Ночь</b> — две кнопки, каждая печатает только свой период</li>
+        <li><b>Адресатор</b> — читается по подписи «Представитель клиентов»</li>
+        <li><b>Счётчик файлов</b> — рядом с локацией видно, в скольких файлах она встречается</li>
+        <li><b>Фильтр по клику</b> — клик по локации в итоге оставляет только её файлы</li>
+        <li><b>Две темы</b> — Доработана и доведена до функциональности смена темы</li>
+        <li><b>Логотип на каждой странице</b> — печать с шапкой файла и листа</li>
+        <li><b>Скорость</b> — убраны тяжёлые анимации, фон стал плавнее, сделана более углубленная работа над оптимизацией</li>
+        <li><b>Экспорт</b> — добавлена возможность экспортировать данные сотрудников для удобства и скорости в работе!</li>
+      </ul>
+    </div>
+  </div>
+   <!-- ========================================================= -->
+<!-- ПАНЕЛЬ СПРАВКИ -->
+<!-- ========================================================= -->
+<div id="helpPanel" class="whats-new-panel help-panel hidden">
+<div class="whats-new-header">
+  <span class="whats-new-title">📖 Инструкция по работе</span>
+  <button id="helpClose" class="whats-new-close" aria-label="Закрыть">×</button>
+</div>
+
+<div class="whats-new-body">
+  <h3>1. Импорт файлов</h3>
+  <p>Перетащите все Excel-файлы (<code>.xlsx</code>) в зону загрузки. Дождитесь, пока фиолетовая вода не заполнит блок полностью. Если появится сообщение об ошибке — проверьте, не поврежден ли файл.</p>
+
+  <h3>2. Проверка карточек (ВАЖНО!)</h3>
+  <p>После загрузки <b>обязательно просмотрите карточки каждого файла</b> внизу страницы. Убедитесь, что:</p>
+  <ul>
+    <li>Локация определилась верно (например, «АБК», «Лаборатория»). Если стоит «—», значит, программа не нашла название объекта в файле.</li>
+    <li>Адресатор считался правильно.</li>
+    <li>В таблицах «День» и «Ночь» есть цифры (если они там должны быть).</li>
+  </ul>
+
+  <h3>3. Фильтр и Общий итог</h3>
+  <p>В блоке «Общий итог» можно <b>кликнуть на любую локацию</b> (например, на ABK). Снизу останутся только те карточки файлов, где есть эта локация. Это удобно для проверки. Чтобы сбросить фильтр, нажмите на строку еще раз или на кнопку «Сбросить».</p>
+
+  <h3>4. Печать</h3>
+  <p>В правом нижнем углу есть две кнопки: <b>☀️ Печать День</b> и <b>🌙 Печать Ночь</b>. Каждая печатает только свои листы.</p>
+  <p><i>Какие файлы не пойдут в печать?</i> Программа автоматически пропускает листы, если в столбце <b>C</b> (начиная с 10-й строки) нет ни одной фамилии (только цифры или пусто). Перед печатью выскочит окошко со списком таких пропущенных файлов.Обьязательно их полностью проверьте! Если в этом файле есть сотрудники но сайт их не видит, значит столбец с именами был смещен нужно чтобы он был именно в столбце (С, 3)!</p>
+
+  <h3>5. Экспорт в Excel</h3>
+  <p>Кнопка <b>📥 Экспорт в Excel</b> собирает всех сотрудников из всех файлов, группирует их по Локациям и Адресаторам (отдельно День и Ночь) и выгружает в красивый файл для отчетности.</p>
+
+  <h3>6. Настройки</h3>
+  <p>Во вкладке «Настройки» можно изменить внешний вид печати (шрифты, рамки) и добавить новые ключевые слова для поиска локаций или ланчбоксов, если появились новые объекты.</p>
+</div>
+</div>
+</body>
+</html>
